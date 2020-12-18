@@ -150,18 +150,18 @@ def create_report(file, services_data):
     for app_name in app_names:
         env_prs = {}
         prs_data[app_name] = {}
-        try:
 
-            repo_app_name = app_data[app_name].general_config.repo_name
-            for env in services_data.envs:
+        repo_app_name = app_data[app_name].general_config.repo_name
+        for env in services_data.envs:
+            prs_data[app_name][env] = []
+
+            try:
                 branch = services_data.get_base_branch(env, env_app_data[env][app_name]['build'])
                 prs_query = 'state="MERGED" AND destination.branch.name="{}"'.format(branch)
                 prs = __get_prs('{}/repositories/{}/{}/pullrequests?q={}'.format(Constants.BITBUCKET_API_URL,
                                                                                  Constants.ATLASSIAN_ORG_NAME,
                                                                                  repo_app_name, prs_query))
                 env_prs[env] = prs
-
-                prs_data[app_name][env] = []
 
                 tag_prefix = services_data.env_tag_prefix[env]
                 tags_query = 'name~"{}"&sort=-target.date'.format(tag_prefix)
@@ -206,11 +206,10 @@ def create_report(file, services_data):
                     prs_data[app_name][env].append({'title': title, 'hash': hash, 'colour': colour, 'author': author,
                                                     'version': version, 'pr_link': pr_link})
 
-        except KeyError as err:
-            logger.exception(f"ENV: {env}, APP: {app_name}")
-
-        except Exception as err:
-            logger.exception("Unexpected error:", sys.exc_info())
+            except Exception as err:
+                logger.exception("Unexpected error:", sys.exc_info())
+                prs_data[app_name][env].append({'title': 'unknown', 'hash': 'unknown', 'colour': 'red', 'author': 'unknown',
+                                                'version': '', 'pr_link': 'unknown'})
 
     base_versions_for_envs = __get_base_versions_for_releases(services_data)
 
