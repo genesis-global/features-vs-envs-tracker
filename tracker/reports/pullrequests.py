@@ -226,9 +226,14 @@ def create_report(file, services_data):
 
                 first_row_values = []
                 for app_name in app_names:
-                    first_row_values.append(env_app_data[env][app_name]['build'])
-                    first_row_values.append(env_app_data[env][app_name]['commitTime'])
-                    first_row_values.append(base_versions_for_envs[env][app_name])
+                    if app_name in env_app_data[env]:
+                        first_row_values.append(env_app_data[env][app_name]['build'])
+                        first_row_values.append(env_app_data[env][app_name]['commitTime'])
+                        first_row_values.append(base_versions_for_envs[env][app_name])
+                    else:
+                        first_row_values.append('not available')
+                        first_row_values.append('?')
+                        first_row_values.append('?')
 
                 row = ('<tr>'+('<td>Current version:{}, created:{}, base: {}</td>' * apps_number) + '</tr>').format(*first_row_values)
                 out.write(row)
@@ -248,7 +253,7 @@ def create_report(file, services_data):
             for i in range(10):
                 row_values = []
                 for app_name in app_names:
-                    if i < len(prs_data[app_name][env]):
+                    if env in prs_data[app_name] and i < len(prs_data[app_name][env]):
                         pr_data = prs_data[app_name][env][i]
 
                         row_values.append(pr_data['colour'])
